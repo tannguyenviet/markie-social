@@ -1,0 +1,21 @@
+POST http://locahost:3002/auth/signin/1 HTTP/1.1
+{
+    "name": "sample",
+    "time": "Wed, 21 Oct 2015 18:27:50 GMT"
+}
+###
+
+POST http://localhost:3002/auth/signup HTTP/1.1
+content-type: application/json
+
+{
+    "email": "amber@gmail.com",
+    "password": "123456",
+    "firstName":"Markie",
+    "lastName":"Tan"
+}
+###
+
+POST http://locahost:3002/auth/comments HTTP/1.1
+content-type: application/json
+

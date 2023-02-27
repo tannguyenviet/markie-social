@@ -1,0 +1,121 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id Int @id @default(autoincrement())
+
+  email    String @unique @db.VarChar(120)
+  password String @db.VarChar(255)
+
+  firstName String? @map("first_name") @db.VarChar(60)
+  lastName  String? @map("last_name") @db.VarChar(60)
+  isActive  Boolean @default(false) @map("is_active")
+  isBlocked Boolean @default(false) @map("is_blocked")
+
+  Access Access[]
+
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+  Device           Device[]
+  Message          Message[]
+  Conversation     Conversation[]
+  Participant      Participant[]
+  UserVerification UserVerification?
+
+  @@map("users")
+}
+
+model Access {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  deviceId  Int      @unique @map("device_id")
+  user      User     @relation(fields: [userId], references: [id])
+  device    Device   @relation(fields: [deviceId], references: [id])
+  token     String   @map("device_token") @db.VarChar(120)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("accesses")
+}
+
+model Device {
+  id          Int    @id @default(autoincrement())
+  userId      Int    @map("user_id")
+  deviceId    Int    @map("device_id")
+  deviceToken String @map("device_token") @db.VarChar(255)
+  deviceType  String @map("device_type") @db.VarChar(120)
+
+  user      User     @relation(fields: [userId], references: [id])
+  Access    Access?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("devices")
+}
+
+model Message {
+  id Int @id @default(autoincrement())
+
+  conversationId Int          @map("conversation_id")
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  senderId       Int          @map("sender_id")
+  user           User         @relation(fields: [senderId], references: [id])
+  messageType    String       @map("message_type") @db.VarChar(120)
+  message        String       @db.Text()
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+  userId         Int
+
+  @@map("messages")
+}
+
+model Conversation {
+  id          Int           @id @default(autoincrement())
+  title       String        @db.VarChar(120)
+  creatorId   Int           @map("creator_id")
+  user        User          @relation(fields: [creatorId], references: [id])
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  deletedAt   DateTime      @map("deleted_at")
+  Message     Message[]
+  Participant Participant[]
+
+  @@map("conversations")
+}
+
+model Participant {
+  id             Int          @id @default(autoincrement())
+  conversationId Int          @map("conversation_id")
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  userId         Int          @map("user_id")
+  user           User         @relation(fields: [userId], references: [id])
+  role           Role
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  @@map("participants")
+}
+
+enum Role {
+  AMIN
+  MEMBER
+}
+
+model UserVerification {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int      @unique @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("user_verifications")
+}
