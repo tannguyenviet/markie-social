@@ -7,6 +7,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { TokenService } from 'src/token/token.service';
 import { MailService } from 'src/mail/mail.service';
+import { UserRegisterDto } from './dto/UserRegisterDto';
 
 @Injectable()
 export class AuthService {
@@ -18,7 +19,7 @@ export class AuthService {
     private mailService: MailService,
   ) {}
 
-  async signup(dto: AuthDto) {
+  async signup(dto: UserRegisterDto) {
     // generate the password hash
     const hashPassword = await argon.hash(dto.password);
     // save the new user in the db
@@ -50,6 +51,8 @@ export class AuthService {
         email: dto.email,
       },
     });
+    console.log({ user });
+
     // if user does not exist throw exception
     if (!user) throw new ForbiddenException('Credentials incorrect');
 
@@ -73,7 +76,6 @@ export class AuthService {
     const secret = this.configService.get('JWT_SECRET');
 
     const token = await this.jwtService.signAsync(payload, {
-      expiresIn: '15m',
       secret: secret,
     });
 

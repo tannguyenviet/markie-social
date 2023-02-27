@@ -1,0 +1,31 @@
+POST http://localhost:3002/post/ HTTP/1.1
+content-type: application/json
+
+{
+    "email": "ambere@gmail.com",
+    "password": "123456",
+    "firstName":"Markie",
+    "lastName":"Tan",
+    "isBlocked":true
+}
+###
+PATCH  http://localhost:3002/post/1 HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFtYmVyZUBnbWFpbC5jb20iLCJpZCI6MTgsImlhdCI6MTY3NzQ5MDgyOSwiZXhwIjoxNjc3NDkxNzI5fQ.Q8YfjfQXpOlsYwYKqVLmYWUoMwQcOpDP8SyoJqmyWIg
+###
+
+
+POST  http://localhost:3002/post HTTP/1.1
+content-type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFtYmVyZUBnbWFpbC5jb20iLCJpZCI6MTgsImlhdCI6MTY3NzQ5MTc3NywiZXhwIjoxNjc3NDkyNjc3fQ.gRrnb7raFtBhOzrutHrVMaauONaStz1pRoF9JQAQdtY
+
+{
+    "title":"Post 1",
+    "content":"content of post"
+}
+
+###
+POST http://locahost:3002/auth/comments HTTP/1.1
+content-type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFtYmVyZUBnbWFpbC5jb20iLCJpZCI6MTgsImlhdCI6MTY3NzQ5MDgyOSwiZXhwIjoxNjc3NDkxNzI5fQ.Q8YfjfQXpOlsYwYKqVLmYWUoMwQcOpDP8SyoJqmyWIg
+
+

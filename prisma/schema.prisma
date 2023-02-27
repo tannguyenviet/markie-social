@@ -30,8 +30,69 @@ model User {
   Conversation     Conversation[]
   Participant      Participant[]
   UserVerification UserVerification?
+  Profile          Profile?
+  Post             Post[]
+  Reaction         Reaction[]
 
   @@map("users")
+}
+
+model Profile {
+  id Int @id @default(autoincrement())
+
+  firstName String?  @map("first_name") @db.VarChar(60)
+  lastName  String?  @map("last_name") @db.VarChar(60)
+  avatar    String?
+  bio       String?
+  phone     String?
+  mail      String?
+  userId    Int      @unique
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("profiles")
+}
+
+model Post {
+  id       Int       @id @default(autoincrement())
+  authorId Int       @map("author_id")
+  author   User      @relation(fields: [authorId], references: [id])
+  title    String
+  content  String    @db.Text
+  Comment  Comment[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  deletedAt DateTime @map("deleted_at")
+
+  @@map("posts")
+}
+
+model Reaction {
+  id           Int          @id @default(autoincrement())
+  authorId     Int          @map("author_id")
+  author       User         @relation(fields: [authorId], references: [id])
+  typeReaction TypeReaction @map("type_react")
+  postId       Int          @map("post_id")
+}
+
+enum TypeReaction {
+  ANGRY
+  SMILE
+  HEART
+}
+
+model Comment {
+  id      Int    @id @default(autoincrement())
+  postId  Int
+  post    Post   @relation(fields: [postId], references: [id])
+  content String @db.Text
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("comments")
 }
 
 model Access {
@@ -68,7 +129,7 @@ model Message {
   conversationId Int          @map("conversation_id")
   conversation   Conversation @relation(fields: [conversationId], references: [id])
   senderId       Int          @map("sender_id")
-  user           User         @relation(fields: [senderId], references: [id])
+  sender         User         @relation(fields: [senderId], references: [id])
   messageType    String       @map("message_type") @db.VarChar(120)
   message        String       @db.Text()
   createdAt      DateTime     @default(now()) @map("created_at")
@@ -81,8 +142,8 @@ model Message {
 model Conversation {
   id          Int           @id @default(autoincrement())
   title       String        @db.VarChar(120)
-  creatorId   Int           @map("creator_id")
-  user        User          @relation(fields: [creatorId], references: [id])
+  authorId    Int           @map("creator_id")
+  author      User          @relation(fields: [authorId], references: [id])
   createdAt   DateTime      @default(now()) @map("created_at")
   updatedAt   DateTime      @updatedAt @map("updated_at")
   deletedAt   DateTime      @map("deleted_at")
