@@ -1,11 +1,10 @@
-import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
-
-export class UserLoginDto {
-  @IsEmail()
-  @IsNotEmpty()
+import * as Joi from 'joi';
+export class LoginUserDto {
   email: string;
-
-  @IsString()
-  @IsNotEmpty()
   password: string;
 }
+
+export const loginUserSchema = Joi.object({
+  email: Joi.string().email().required(),
+  password: Joi.string().required(),
+});

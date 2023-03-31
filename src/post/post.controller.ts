@@ -6,6 +6,7 @@ import {
   Param,
   ParseIntPipe,
   Body,
+  Res,
 } from '@nestjs/common';
 import { GetUser } from 'src/auth/decorator';
 import { JwtGuard } from 'src/auth/guard';
@@ -21,14 +22,16 @@ export class PostController {
     @Body() createPostDto: CreatePostDto,
     @GetUser() user: { id: number },
   ) {
-    console.log({ createPostDto });
     return this.postService.createPost(createPostDto, user.id);
   }
+
   @Patch('/:id')
-  updatePost(
+  async updatePost(
     @Param('id', new ParseIntPipe()) postId: number,
     @Body() updatePostDto: UpdatePostDto,
+    @Res() res,
   ) {
-    return this.postService.updatePost(updatePostDto, postId);
+    const data = await this.postService.updatePost(updatePostDto, postId);
+    return res.status(200).json(data);
   }
 }

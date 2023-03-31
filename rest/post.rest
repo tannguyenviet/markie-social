@@ -16,7 +16,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFtYmVyZ
 
 POST  http://localhost:3002/post HTTP/1.1
 content-type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFtYmVyZUBnbWFpbC5jb20iLCJpZCI6MTgsImlhdCI6MTY3NzQ5MTc3NywiZXhwIjoxNjc3NDkyNjc3fQ.gRrnb7raFtBhOzrutHrVMaauONaStz1pRoF9JQAQdtY
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFtYmVyZUBnbWFpbC5jb20iLCJpZCI6MTgsImlhdCI6MTY3NzU0ODgxOCwiZXhwIjoxNjc3NTQ5NzE4fQ.o8ZViLkvwmU_-OtgMsM_THyhVcGf1jL0xsSYpY-rCrY
 
 {
     "title":"Post 1",

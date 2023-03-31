@@ -16,10 +16,11 @@ model User {
   email    String @unique @db.VarChar(120)
   password String @db.VarChar(255)
 
-  firstName String? @map("first_name") @db.VarChar(60)
-  lastName  String? @map("last_name") @db.VarChar(60)
-  isActive  Boolean @default(false) @map("is_active")
-  isBlocked Boolean @default(false) @map("is_blocked")
+  firstName    String? @map("first_name") @db.VarChar(60)
+  lastName     String? @map("last_name") @db.VarChar(60)
+  refreshToken String? @map("refresh_token") @db.VarChar(255)
+  isActive     Boolean @default(false) @map("is_active")
+  isBlocked    Boolean @default(false) @map("is_blocked")
 
   Access Access[]
 
@@ -64,7 +65,7 @@ model Post {
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-  deletedAt DateTime @map("deleted_at")
+  isDeleted Boolean  @default(false) @map("isDeleted")
 
   @@map("posts")
 }
@@ -146,7 +147,7 @@ model Conversation {
   author      User          @relation(fields: [authorId], references: [id])
   createdAt   DateTime      @default(now()) @map("created_at")
   updatedAt   DateTime      @updatedAt @map("updated_at")
-  deletedAt   DateTime      @map("deleted_at")
+  isDeleted   Boolean       @default(false) @map("is_deleted")
   Message     Message[]
   Participant Participant[]
 

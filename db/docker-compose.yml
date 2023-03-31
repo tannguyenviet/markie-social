@@ -1,0 +1,23 @@
+version: '3.5'
+services:
+  postgres:
+    container_name: postgres_container
+    image: postgres
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASS:-root}
+      POSTGRES_DB: ${DB_NAME:-mitsuwa}
+      PGDATA: /data
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+    networks:
+      - local
+    restart: unless-stopped
+networks:
+  local:
+    driver: bridge
+
+volumes:
+  postgres:

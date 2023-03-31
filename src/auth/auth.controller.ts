@@ -4,13 +4,17 @@ import {
   HttpCode,
   HttpStatus,
   Post,
-  Req,
+  Request,
+  Res,
+  UseFilters,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
+import { HttpExceptionFilter } from 'src/utils/http-exception.filter';
+import { JoiValidationPipe } from 'src/utils/validation';
 import { AuthService } from './auth.service';
 import { AuthDto } from './dto';
-import { UserLoginDto } from './dto/UserLoginDto';
+import { LoginUserDto, loginUserSchema } from './dto/UserLoginDto';
 import { UserRegisterDto } from './dto/UserRegisterDto';
 
 @Controller('auth')
@@ -18,14 +22,30 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('signup')
-  @UsePipes(new ValidationPipe({ whitelist: true }))
-  signup(@Body() dto: UserRegisterDto) {
-    return this.authService.signup(dto);
+  // @UsePipes()
+  async signup(@Body() dto: UserRegisterDto, @Res() res) {
+    const data = await this.authService.signup(dto);
+    return res.status(200).send(data);
   }
 
+  // @UseFilters(new HttpExceptionFilter())
   @HttpCode(HttpStatus.OK)
-  @Post('signin')
-  signin(@Body() dto: UserLoginDto) {
-    return this.authService.signin(dto);
+  @Post('login')
+  // @UsePipes(new JoiValidationPipe(loginUserSchema))
+  async login(@Body() dto: LoginUserDto, @Res() res) {
+    const accessToken = await this.authService.login(dto);
+    return res.status(200).send(accessToken);
+  }
+  @HttpCode(HttpStatus.OK)
+  @Post('refresh-token')
+  async refreshToken(@Body() body: { accessToken: string }, @Res() res) {
+    console.log('bodddddddddddddddddddddddddddddddddddddddd');
+
+    console.log(body);
+    const newAccessToken = await this.authService.refreshToken(
+      body.accessToken,
+    );
+    console.log(newAccessToken);
+    return res.send(newAccessToken);
   }
 }
