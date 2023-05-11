@@ -16,6 +16,7 @@ import { AuthService } from './auth.service';
 import { AuthDto } from './dto';
 import { LoginUserDto, loginUserSchema } from './dto/UserLoginDto';
 import { UserRegisterDto } from './dto/UserRegisterDto';
+import { refreshTokenSchema } from './dto/refreshTokenDto';
 
 @Controller('auth')
 export class AuthController {
@@ -31,21 +32,18 @@ export class AuthController {
   // @UseFilters(new HttpExceptionFilter())
   @HttpCode(HttpStatus.OK)
   @Post('login')
-  // @UsePipes(new JoiValidationPipe(loginUserSchema))
+  @UsePipes(new JoiValidationPipe(loginUserSchema))
   async login(@Body() dto: LoginUserDto, @Res() res) {
     const accessToken = await this.authService.login(dto);
     return res.status(200).send(accessToken);
   }
   @HttpCode(HttpStatus.OK)
   @Post('refresh-token')
+  @UsePipes(new JoiValidationPipe(refreshTokenSchema))
   async refreshToken(@Body() body: { accessToken: string }, @Res() res) {
-    console.log('bodddddddddddddddddddddddddddddddddddddddd');
-
-    console.log(body);
     const newAccessToken = await this.authService.refreshToken(
       body.accessToken,
     );
-    console.log(newAccessToken);
     return res.send(newAccessToken);
   }
 }

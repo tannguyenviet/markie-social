@@ -24,8 +24,6 @@ export class MailService {
     const url = `${this.configService.get(
       'BASE_API_URL',
     )}/auth/verify?token=${token}`;
-    console.log('111111');
-
     await this.mailerService.sendMail({
       to: user.email,
       // from: '"Support Team" <support@example.com>', // override default from

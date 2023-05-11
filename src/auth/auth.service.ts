@@ -9,19 +9,20 @@ import { AuthDto } from './dto';
 import * as argon from 'argon2';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
-import { TokenService } from 'src/token/token.service';
 import { MailService } from 'src/mail/mail.service';
 import { UserRegisterDto } from './dto/UserRegisterDto';
-import { access } from 'fs';
+import {
+  ACCESS_TOKEN_SECRET,
+  REFRESH_TOKEN_SECRET,
+  TIME_SPAN_ACCESS_TOKEN,
+  TIME_SPAN_REFRESH_TOKEN,
+} from 'src/utils/constant';
 
 @Injectable()
 export class AuthService {
   constructor(
     private prismaService: PrismaService,
     private jwtService: JwtService,
-    private configService: ConfigService,
-    private tokenService: TokenService,
     private mailService: MailService,
   ) {}
 
@@ -67,22 +68,15 @@ export class AuthService {
     // if password incorrect throw exception
     if (!pwMatches) throw new ForbiddenException('Credentials incorrect');
     const payload = { email: user.email, id: user.id };
-    console.log('herreee');
+    const accessToken = await this.jwtService.signAsync(payload, {
+      secret: ACCESS_TOKEN_SECRET,
+      expiresIn: TIME_SPAN_ACCESS_TOKEN,
+    });
+    const refreshToken = await this.jwtService.signAsync(payload, {
+      secret: REFRESH_TOKEN_SECRET,
+      expiresIn: TIME_SPAN_REFRESH_TOKEN,
+    });
 
-    const secretKey = this.configService.get('JWT_SECRET');
-    const refreshSecretKey = this.configService.get('JWT_REFRESH');
-    const accessToken = await this.tokenService.generateToken(
-      payload,
-      secretKey,
-      '30s',
-    );
-    const refreshToken = await this.tokenService.generateToken(
-      payload,
-      refreshSecretKey,
-      '2m',
-    );
-
-    console.log(refreshToken);
     const result = await this.prismaService.user.update({
       where: { id: user.id },
       data: { refreshToken: refreshToken },
@@ -90,7 +84,6 @@ export class AuthService {
     if (!result) {
       throw new InternalServerErrorException();
     }
-    console.log('result', result);
     return {
       accessToken,
       refreshToken,
@@ -105,25 +98,39 @@ export class AuthService {
       sub: userId,
       email,
     };
-    const secret = this.configService.get('JWT_SECRET');
 
     const token = await this.jwtService.signAsync(payload, {
-      secret: secret,
+      secret: ACCESS_TOKEN_SECRET,
     });
 
     return {
       access_token: token,
     };
   }
-
-  async refreshToken(accessToken: string) {
-    const refreshSecretKey = this.configService.get('JWT_REFRESH') as string;
-    const accessTokenSecret = this.configService.get('JWT_SECRET');
-    console.log('zoos');
+  checkTokenBelongSystem = async (token, secret: string) => {
     try {
-      const payload = await this.jwtService.verifyAsync(accessToken, {
-        secret: accessTokenSecret,
-      });
+      await this.jwtService.verifyAsync(token, { secret });
+      return true;
+    } catch (error) {
+      if (error.message === 'jwt expired') {
+        return true;
+      }
+      return false;
+    }
+  };
+  async refreshToken(accessToken: string) {
+    const isBelong = this.checkTokenBelongSystem(
+      accessToken,
+      ACCESS_TOKEN_SECRET,
+    );
+    if (!isBelong) {
+      throw new UnauthorizedException();
+    }
+    try {
+      const payload = await this.jwtService.decode(accessToken);
+      if (typeof payload === 'string') {
+        throw new UnauthorizedException();
+      }
       const user = await this.prismaService.user.findUnique({
         where: { email: payload.email },
         select: { email: true, id: true, refreshToken: true },
@@ -131,24 +138,20 @@ export class AuthService {
       if (!user) {
         throw new UnauthorizedException();
       }
-      const payloadRefreshToken = await this.jwtService.verifyAsync(
-        user.refreshToken,
-        {
-          secret: accessTokenSecret,
-        },
-      );
-
+      await this.jwtService.verifyAsync(user.refreshToken, {
+        secret: REFRESH_TOKEN_SECRET,
+      });
       const newAccessToken = await this.jwtService.signAsync(
-        payloadRefreshToken,
+        { user_id: user.id, email: user.email },
         {
-          secret: accessTokenSecret,
+          secret: ACCESS_TOKEN_SECRET,
+          expiresIn: TIME_SPAN_ACCESS_TOKEN,
         },
       );
       return { accessToken: newAccessToken };
     } catch (error) {
-      console.log(error.message);
       if (error.message === 'jwt expired') {
-        throw new UnauthorizedException('jwt expired');
+        throw new UnauthorizedException('session_invalid');
       }
       throw new InternalServerErrorException();
     }
